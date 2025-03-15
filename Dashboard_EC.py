@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-df = pd.read_excel("C:/Users/QinQin/Downloads/Output_V20.xlsx")  
+df = pd.read_excel("Output_V20.xlsx")
 
 st.title("Interactive Dashboard for U_it Analysis")
 
