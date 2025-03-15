@@ -3,7 +3,13 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-df = pd.read_excel("Output_V20.xlsx")
+# File uploader in Streamlit
+uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"])
+
+if uploaded_file is not None:
+    df = pd.read_excel(uploaded_file)  # Read uploaded file
+    st.write("Data Preview:", df.head())  # Show data preview
+
 
 st.title("Interactive Dashboard for U_it Analysis")
 
