@@ -8,38 +8,42 @@ uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"])
 
 if uploaded_file is not None:
     df = pd.read_excel(uploaded_file)  # Read uploaded file
+    df.columns = df.columns.str.strip()  # Remove any unexpected spaces in column names
     st.write("Data Preview:", df.head())  # Show data preview
 
+    st.title("Interactive Dashboard for U_it Analysis")
 
-st.title("Interactive Dashboard for U_it Analysis")
+    if "Region" in df.columns and "Year" in df.columns and "EC" in df.columns and "U_it_hat_1" in df.columns:
+        region_options = df["Region"].unique()
+        year_options = sorted(df["Year"].unique())
+        ec_options = df["EC"].unique()
 
-region_options = df["Region"].unique()
-year_options = sorted(df["Year"].unique())
-ec_options = df["EC"].unique()
+        selected_region = st.selectbox("Select Region:", ["All"] + list(region_options))
+        selected_year = st.selectbox("Select Year:", ["All"] + list(year_options))
+        selected_ec = st.selectbox("Select EC:", ["All"] + list(ec_options))
 
-selected_region = st.selectbox("Select Region:", ["All"] + list(region_options))
-selected_year = st.selectbox("Select Year:", ["All"] + list(year_options))
-selected_ec = st.selectbox("Select EC:", ["All"] + list(ec_options))
+        filtered_df = df.copy()
+        if selected_region != "All":
+            filtered_df = filtered_df[filtered_df["Region"] == selected_region]
+        if selected_year != "All":
+            filtered_df = filtered_df[filtered_df["Year"] == selected_year]
+        if selected_ec != "All":
+            filtered_df = filtered_df[filtered_df["EC"] == selected_ec]
 
+        filtered_df["exp(-U_it)"] = np.exp(-filtered_df["U_it_hat_1"])
 
-filtered_df = df.copy()
-if selected_region != "All":
-    filtered_df = filtered_df[filtered_df["Region"] == selected_region]
-if selected_year != "All":
-    filtered_df = filtered_df[filtered_df["Year"] == selected_year]
-if selected_ec != "All":
-    filtered_df = filtered_df[filtered_df["EC"] == selected_ec]
+        fig, ax = plt.subplots()
+        ax.plot(filtered_df["Year"], filtered_df["exp(-U_it)"], marker="o", linestyle="-")
+        ax.set_xlabel("Year")
+        ax.set_ylabel("exp(-U_it)")
+        ax.set_title("exp(-U_it) Over Time")
+        ax.grid()
 
-filtered_df["exp(-U_it)"] = np.exp(-filtered_df["U_it_hat_1"])
+        st.pyplot(fig)
 
-fig, ax = plt.subplots()
-ax.plot(filtered_df["Year"], filtered_df["exp(-U_it)"], marker="o", linestyle="-")
-ax.set_xlabel("Year")
-ax.set_ylabel("exp(-U_it)")
-ax.set_title("exp(-U_it) Over Time")
-ax.grid()
-
-st.pyplot(fig)
-
-st.write("Filtered Data:")
-st.dataframe(filtered_df)
+        st.write("Filtered Data:")
+        st.dataframe(filtered_df)
+    else:
+        st.error("Error: The uploaded file does not contain required columns ('Region', 'Year', 'EC', 'U_it_hat_1').")
+else:
+    st.warning("Please upload an Excel file to proceed.")
